@@ -1,0 +1,84 @@
+{
+  "screens": [
+    {
+      "file": "landing-hero.jpeg",
+      "description": "Marketing landing page hero section with headline, CTA buttons, and a sample resume analysis card."
+    },
+    {
+      "file": "landing-cta.jpeg",
+      "description": "Marketing landing page call-to-action section ('Ready to see your career clearly?') with primary and secondary buttons."
+    },
+    {
+      "file": "landing-features.jpeg",
+      "description": "Marketing landing page features grid highlighting modules like ATS analysis, interview simulator, code arena, skill roadmap, and portfolio audit."
+    },
+    {
+      "file": "login-page.jpeg",
+      "description": "Login screen (light) with email/password and social sign-in options."
+    },
+    {
+      "file": "signup-page.jpeg",
+      "description": "Create account / signup screen (dark) with Google sign-in and email-based registration fields."
+    },
+    {
+      "file": "dashboard-overview.jpeg",
+      "description": "Dashboard overview showing overall score, ATS compatibility, missing keywords, and skill gaps with quick actions."
+    },
+    {
+      "file": "keywords-analysis.jpeg",
+      "description": "Keyword semantic analysis screen with matched vs missing keywords, target keyword spectrum chips, and an AI optimization panel."
+    },
+    {
+      "file": "resume-rewrite.jpeg",
+      "description": "Resume AI rewrite screen with a central empty state and a primary action to generate an AI rewrite."
+    },
+    {
+      "file": "skill-roadmap.jpeg",
+      "description": "Skill roadmap screen showing a recommended learning path, progress stats, and a list of roadmap items."
+    },
+    {
+      "file": "qa-prep-technical-questions.jpeg",
+      "description": "Q&A prep screen listing technical questions with expandable rows and sample answers."
+    },
+    {
+      "file": "qa-prep-star-drafts.jpeg",
+      "description": "Q&A prep screen with STAR answer drafts (Situation/Task/Action/Result) in stacked cards."
+    },
+    {
+      "file": "mock-interview-configure-session.jpeg",
+      "description": "Mock interview setup screen (step 01) to configure session: interview mode, language, and input method (voice/text)."
+    },
+    {
+      "file": "mock-interview-ready.jpeg",
+      "description": "Mock interview screen (step 02) showing AI interviewer recommendation and a 'Ready to begin?' card with 'Enter Simulation' CTA."
+    },
+    {
+      "file": "mock-interview-ready-variant.jpeg",
+      "description": "Alternate mock interview screen view of the AI interviewer recommendation + 'Ready to begin?' section (layout variant)."
+    },
+    {
+      "file": "mock-interview-language-dropdown.jpeg",
+      "description": "Mock interview setup screen with the language dropdown open (JavaScript/TypeScript/Python/etc.)."
+    },
+    {
+      "file": "portfolio-audit.jpeg",
+      "description": "Portfolio audit screen prompting for a GitHub URL and a button to analyze the portfolio."
+    },
+    {
+      "file": "history-past-applications.jpeg",
+      "description": "History screen listing past applications/analyses with match score, ATS checks, and 'Review Match' actions."
+    },
+    {
+      "file": "settings-account-appearance.jpeg",
+      "description": "Settings screen (account) showing profile info and editable fields plus theme selection controls."
+    },
+    {
+      "file": "settings-notifications-security.jpeg",
+      "description": "Settings screen (notifications & security) with toggles, 2FA entry, active sessions, and data/privacy management."
+    },
+    {
+      "file": "support-help-faq.jpeg",
+      "description": "Help & support screen with support contact options and an FAQ list."
+    }
+  ]
+}
