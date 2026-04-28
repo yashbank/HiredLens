@@ -28,8 +28,3 @@ See **[DEPLOY.md](./DEPLOY.md)** for step-by-step **Vercel** deployment, environ
 
 Copy `.env.example` to `.env.local`. Variables are documented inline in `.env.example`; `src/lib/env.ts` reads `NEXT_PUBLIC_APP_URL` and `NEXT_PUBLIC_MOCK_REWRITE_DELAY_MS` (see **DEPLOY.md** for Vercel).
 # HiredLens
-# HiredLens
-# HiredLens
-# HiredLens
-# HiredLens
-# HiredLens
