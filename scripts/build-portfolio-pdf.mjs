@@ -14,7 +14,7 @@ const LINKS = {
   linkedin: "linkedin.com/in/yash-bankar-9249531aa",
   github: "github.com/yashbank",
   portfolio: "yashbank.github.io",
-  instagram: "instagram.com/yash.bankar", // ← confirm handle
+  instagram: "instagram.com/yashbank",
   x: "x.com/YshBnkar1",
   email: "yashbank2002@gmail.com"
 };
@@ -122,12 +122,13 @@ function pageBG(deck = false) {
 }
 
 function pill(x, y, label, color = C.violet, fillBg) {
-  set(F.bodySemi, 10.5, color);
-  const tw = doc.widthOfString(label.toUpperCase(), { characterSpacing: 1.2 });
-  const w = tw + 28;
-  rrect(x, y, w, 24, 12, fillBg || hexA(color, 0.12), hexA(color, 0.45), 1);
-  set(F.bodySemi, 10.5, color).text(label.toUpperCase(), x + 14, y + 6.5, {
-    characterSpacing: 1.2,
+  set(F.bodySemi, 10, C.text);
+  const tw = doc.widthOfString(label.toUpperCase(), { characterSpacing: 1.3 });
+  const w = tw + 34;
+  rrect(x, y, w, 25, 12.5, fillBg || hexA(color, 0.1), hexA(color, 0.28), 1);
+  doc.circle(x + 13, y + 12.5, 3).fill(color);
+  set(F.bodySemi, 10, C.text).text(label.toUpperCase(), x + 22, y + 7.5, {
+    characterSpacing: 1.3,
     lineBreak: false
   });
   return w;
@@ -250,6 +251,101 @@ function gauge(cx, cy, r, pct, label, value) {
   });
 }
 
+/* ── refined line icons (lucide-style) ── */
+const ic = (c, lw = 1.7) => doc.lineWidth(lw).lineCap("round").lineJoin("round").strokeColor(c);
+function iconTarget(cx, cy, s, c) {
+  doc.circle(cx, cy, s); ic(c).stroke();
+  doc.circle(cx, cy, s * 0.55); ic(c).stroke();
+  doc.circle(cx, cy, s * 0.12).fill(c);
+}
+function spark(x, y, s, c) {
+  doc.moveTo(x - s, y).lineTo(x + s, y).moveTo(x, y - s).lineTo(x, y + s);
+  ic(c, 1.3).stroke();
+}
+function iconWand(cx, cy, s, c) {
+  doc.moveTo(cx - s * 0.75, cy + s * 0.75).lineTo(cx + s * 0.35, cy - s * 0.35); ic(c, 1.9).stroke();
+  spark(cx + s * 0.55, cy - s * 0.65, s * 0.32, c);
+  spark(cx + s * 0.95, cy - s * 0.05, s * 0.22, c);
+  spark(cx + s * 0.1, cy - s * 0.95, s * 0.2, c);
+}
+function iconChart(cx, cy, s, c) {
+  const base = cy + s;
+  [s * 0.7, s * 1.25, s * 1.85].forEach((h, i) => {
+    const x = cx - s + i * s;
+    doc.moveTo(x, base).lineTo(x, base - h); ic(c, 2.1).stroke();
+  });
+}
+function iconMic(cx, cy, s, c) {
+  doc.roundedRect(cx - s * 0.5, cy - s, s, s * 1.35, s * 0.5); ic(c).stroke();
+  doc.path(`M ${cx - s * 0.85} ${cy + s * 0.05} a ${s * 0.85} ${s * 0.85} 0 0 0 ${s * 1.7} 0`); ic(c).stroke();
+  doc.moveTo(cx, cy + s * 0.9).lineTo(cx, cy + s * 1.45); ic(c).stroke();
+}
+function iconRoute(cx, cy, s, c) {
+  doc.circle(cx - s * 0.7, cy + s * 0.75, 2.4); ic(c, 1.6).stroke();
+  doc.circle(cx + s * 0.7, cy - s * 0.75, 2.4); ic(c, 1.6).stroke();
+  doc.path(`M ${cx - s * 0.7} ${cy + s * 0.4} v ${-s * 0.5} a ${s * 0.55} ${s * 0.55} 0 0 1 ${s * 0.55} ${-s * 0.55} h ${s * 0.15}`);
+  ic(c, 1.6).dash(2.4, { space: 2.4 }).stroke();
+  doc.undash();
+}
+function iconBook(cx, cy, s, c) {
+  doc.path(`M ${cx} ${cy - s} v ${s * 2} M ${cx} ${cy - s} h ${-s} v ${s * 2} h ${s} M ${cx} ${cy - s} h ${s} v ${s * 2} h ${-s}`);
+  ic(c, 1.6).stroke();
+}
+function softCircle(cx, cy, r, c, op) {
+  doc.save().opacity(op);
+  doc.circle(cx, cy, r).fill(c);
+  doc.restore();
+}
+
+/* mini theme preview frame (or real screenshot if present at docs/portfolio/screens/<kind>.png) */
+const THEME_UI = {
+  aurora: { bg: "#15121F", panel: "#1F1A2E", sb: "#1A1626", sub: "#8B86A0", a1: C.violet, a2: C.cyan, light: false, mesh: false },
+  porcelain: { bg: "#F3F3F8", panel: "#FFFFFF", sb: "#FBFBFE", sub: "#9A9AA8", a1: C.blue, a2: "#A78BFA", light: true, mesh: false },
+  pulse: { bg: "#1B1020", panel: "#241526", sb: "#1F1322", sub: "#A98CA0", a1: C.orange, a2: C.magenta, light: false, mesh: true }
+};
+function miniApp(x, y, w, h, kind) {
+  const P = THEME_UI[kind];
+  doc.save();
+  doc.roundedRect(x, y, w, h, 10).clip();
+  doc.rect(x, y, w, h).fill(P.bg);
+  if (P.mesh) {
+    softCircle(x + w * 0.72, y + h * 0.28, w * 0.45, C.magenta, 0.5);
+    softCircle(x + w * 0.2, y + h * 0.85, w * 0.4, C.orange, 0.4);
+  }
+  doc.rect(x, y, w, 16).fill(P.panel);
+  [C.magenta, C.amber, C.emerald].forEach((c, i) => doc.circle(x + 9 + i * 7, y + 8, 2).fill(c));
+  [C.violet, C.blue, C.orange].forEach((c, i) => doc.circle(x + w - 30 + i * 9, y + 8, 3).fill(c));
+  doc.rect(x, y + 16, 40, h - 16).fill(P.sb);
+  for (let i = 0; i < 5; i++)
+    doc.roundedRect(x + 7, y + 26 + i * 13, 26, 5, 2.5).fill(i === 0 ? hexA(P.a1, 0.6) : hexA(P.sub, 0.32));
+  const mx = x + 50;
+  doc.circle(mx + 18, y + 46, 14).lineWidth(3).stroke(hexA(P.sub, 0.3));
+  doc.path(arcPath(mx + 18, y + 46, 14, -Math.PI / 2, Math.PI)).lineWidth(3).lineCap("round").stroke(P.a1);
+  doc.roundedRect(mx + 44, y + 30, w - (mx - x) - 56, 13, 3).fill(P.panel);
+  const cwid = (w - (mx - x) - 60) / 2;
+  doc.roundedRect(mx + 44, y + 50, cwid, 24, 3).fill(P.panel);
+  doc.roundedRect(mx + 50 + cwid, y + 50, cwid, 24, 3).fill(P.panel);
+  for (let i = 0; i < 4; i++) doc.roundedRect(mx + 44 + i * 26, y + 82, 22, 8, 4).fill(hexA(P.a2, 0.45));
+  doc.restore();
+  doc.roundedRect(x, y, w, h, 10).lineWidth(1).stroke(hexA("#FFFFFF", P.light ? 0.18 : 0.12));
+}
+function preview(x, y, w, h, kind) {
+  const p = `docs/portfolio/screens/${kind}.png`;
+  if (existsSync(p)) {
+    doc.save();
+    doc.roundedRect(x, y, w, h, 10).clip();
+    try {
+      doc.image(p, x, y, { cover: [w, h], align: "center", valign: "center" });
+    } catch {
+      miniApp(x, y, w, h, kind);
+    }
+    doc.restore();
+    doc.roundedRect(x, y, w, h, 10).lineWidth(1).stroke(hexA("#FFFFFF", 0.16));
+  } else {
+    miniApp(x, y, w, h, kind);
+  }
+}
+
 /* social badge: returns drawn */
 function social(x, y, kind, handle) {
   const s = 30;
@@ -304,10 +400,10 @@ function card(x, y, w, h, accent, icon, head, body) {
   softShadow(x, y, w, h, 16);
   rrect(x, y, w, h, 16, C.panel, C.line, 1);
   rrect(x, y, w, 4, 2, null);
-  gradRect(x + 18, y + 18, 42, 42, 11, [accent, hexA(accent, 0.5)]);
-  if (icon) icon(x + 39, y + 39);
-  set(F.displaySemi, 15, C.white).text(head, x + 18, y + 74, { width: w - 36 });
-  set(F.body, 11, C.mute).text(body, x + 18, y + 98, { width: w - 36, lineGap: 2.5 });
+  gradRect(x + 18, y + 18, 44, 44, 12, [accent, hexA(accent, 0.5)]);
+  if (icon) icon(x + 40, y + 40);
+  set(F.displaySemi, 15, C.white).text(head, x + 18, y + 78, { width: w - 36 });
+  set(F.body, 11, C.mute).text(body, x + 18, y + 104, { width: w - 36, lineGap: 4 });
 }
 
 /* ════════════════════════ SLIDE 1 — COVER ════════════════════════ */
@@ -432,38 +528,28 @@ function themes() {
     { width: 880, lineGap: 3 }
   );
 
-  const cardsY = M + 168;
-  const cw = 348,
-    ch = 360,
+  const cardsY = M + 180,
+    cw = 348,
+    ch = 372,
     gap = 24;
   const themesData = [
-    { n: "Aurora", t: "Spatial glass", g: [C.violet, C.cyan], desc: "Dark glassmorphism with blur, depth and neon aurora light.", tags: ["Glass", "Blur", "Neon"] },
-    { n: "Porcelain", t: "Airy minimal", g: [C.blue, "#A78BFA"], desc: "Light, calm, Apple-grade restraint — soft shadow & whitespace.", tags: ["Soft", "Clean", "Light"] },
-    { n: "Pulse", t: "Vivid energy", g: [C.orange, C.magenta], desc: "Bold gradient mesh, grain and expressive type with spring motion.", tags: ["Gradient", "Grain", "Springy"] }
+    { n: "Aurora", kind: "aurora", t: "Spatial glass", c: C.violet, sw: [C.violet, C.cyan, C.magenta], desc: "Dark glassmorphism with blur, depth and neon aurora light.", tags: ["Glass", "Blur", "Neon"] },
+    { n: "Porcelain", kind: "porcelain", t: "Airy minimal", c: C.blue, sw: [C.blue, "#A78BFA", C.cyan], desc: "Light, calm, Apple-grade restraint with soft shadow and whitespace.", tags: ["Soft", "Clean", "Light"] },
+    { n: "Pulse", kind: "pulse", t: "Vivid energy", c: C.orange, sw: [C.orange, C.magenta, C.violet], desc: "Bold gradient mesh, grain and expressive type with spring motion.", tags: ["Gradient", "Grain", "Springy"] }
   ];
   themesData.forEach((th, i) => {
     const x = M + i * (cw + gap);
     softShadow(x, cardsY, cw, ch, 18);
     rrect(x, cardsY, cw, ch, 18, C.panel, C.line, 1);
-    // gradient header
-    gradRect(x, cardsY, cw, 120, 18, [th.g[0], th.g[1]]);
-    doc.rect(x, cardsY + 100, cw, 20).fill(C.panel); // square off bottom of header
-    rrect(x, cardsY, cw, ch, 18, null, C.line, 1);
-    // swatches
-    th.g.concat([GRAD[2]]).slice(0, 3).forEach((c, j) => {
-      doc.circle(x + 34 + j * 26, cardsY + 60, 11).fill(c);
-      doc.circle(x + 34 + j * 26, cardsY + 60, 11).lineWidth(1).stroke(hexA("#FFFFFF", 0.5));
-    });
-    set(F.display, 26, C.white).text(th.n, x + 22, cardsY + 138, { lineBreak: false });
-    set(F.bodySemi, 11.5, th.g[0] === C.blue ? C.blue : th.g[0]).text(th.t.toUpperCase(), x + 22, cardsY + 172, {
-      characterSpacing: 1.4
-    });
-    set(F.body, 11.5, C.mute).text(th.desc, x + 22, cardsY + 198, { width: cw - 44, lineGap: 3 });
-    let tagX = x + 22;
+    preview(x + 16, cardsY + 16, cw - 32, 150, th.kind);
+    set(F.display, 23, C.white).text(th.n, x + 20, cardsY + 182, { lineBreak: false });
+    th.sw.forEach((c, j) => doc.circle(x + cw - 26 - j * 19, cardsY + 192, 6.5).fill(c));
+    set(F.bodySemi, 10.5, th.c).text(th.t.toUpperCase(), x + 20, cardsY + 212, { characterSpacing: 1.5 });
+    set(F.body, 11.5, C.mute).text(th.desc, x + 20, cardsY + 234, { width: cw - 40, lineGap: 4.5 });
+    let tagX = x + 20;
     th.tags.forEach((tg) => {
-      tagX += pill(tagX, cardsY + 268, tg, th.g[0] === C.blue ? C.blue : th.g[0]) + 8;
+      tagX += pill(tagX, cardsY + 314, tg, th.c) + 8;
     });
-    set(F.mono, 10, C.faint).text(`--radius · --surface · --grad`, x + 22, cardsY + 312, { lineBreak: false });
   });
   footer(3);
 }
@@ -590,12 +676,12 @@ function features() {
   title(M, M + 36, "Built for the whole job hunt.", 38);
 
   const items = [
-    [C.cyan, "Keyword analysis", "Semantic match of resume vs. posting — matched/missing chips weighted by impact.", (x, y) => iconBolt(x, y, 9, C.white)],
-    [C.violet, "AI rewrites", "Before/after bullet rewrites with keyword injection and quantified outcomes.", (x, y) => iconCheck(x, y, 8, C.white)],
-    [C.magenta, "Overview score", "North-star match, ATS safety and prioritized gaps with animated gauges.", (x, y) => iconBolt(x, y, 9, C.white)],
-    [C.emerald, "Mock interviews", "Voice or text practice with a role-tuned AI persona & live waveform.", (x, y) => iconCheck(x, y, 8, C.white)],
-    [C.orange, "Skill roadmap", "A sequenced upskilling plan inferred from your gaps & milestones.", (x, y) => iconBolt(x, y, 9, C.white)],
-    [C.blue, "Q&A prep", "Behavioral & system-design prompts aligned to staff-level rubrics.", (x, y) => iconCheck(x, y, 8, C.white)]
+    [C.cyan, "Keyword analysis", "Semantic match of resume vs. posting — matched and missing chips weighted by impact.", (x, y) => iconTarget(x, y, 9, C.white)],
+    [C.violet, "AI rewrites", "Before/after bullet rewrites with keyword injection and quantified outcomes.", (x, y) => iconWand(x, y, 8, C.white)],
+    [C.magenta, "Overview score", "North-star match, ATS safety and prioritized gaps with animated gauges.", (x, y) => iconChart(x, y, 7, C.white)],
+    [C.emerald, "Mock interviews", "Voice or text practice with a role-tuned AI persona and live waveform.", (x, y) => iconMic(x, y, 7, C.white)],
+    [C.orange, "Skill roadmap", "A sequenced upskilling plan inferred from your gaps and milestones.", (x, y) => iconRoute(x, y, 8, C.white)],
+    [C.blue, "Q&A prep", "Behavioral and system-design prompts aligned to staff-level rubrics.", (x, y) => iconBook(x, y, 7, C.white)]
   ];
   const cols = 3,
     cw = 360,
@@ -763,20 +849,20 @@ function motion() {
     ly = M + 110,
     lw = 540;
   const prims = [
-    ["Reveal / Stagger", "Scroll-triggered fade + rise, staggered children."],
-    ["AnimatedNumber", "Count-up on first in-view."],
-    ["Magnetic + Tilt", "Cursor-magnetic buttons; 3D tilt with moving light."],
-    ["Spotlight", "Pointer-following radial highlight on cards."],
-    ["Animated charts", "SVG gauge / area / bars that draw into view."],
-    ["Command palette", "Command-K nav + theme switching (cmdk)."]
+    ["Reveal / Stagger", "Scroll-triggered fade + rise, staggered children.", (x, y) => { spark(x - 4, y, 3, C.white); spark(x + 5, y - 5, 2.2, C.white); spark(x + 4, y + 5, 2, C.white); }],
+    ["AnimatedNumber", "Count-up on first in-view.", (x, y) => iconChart(x, y, 7, C.white)],
+    ["Magnetic + Tilt", "Cursor-magnetic buttons; 3D tilt with moving light.", (x, y) => iconTarget(x, y, 7, C.white)],
+    ["Spotlight", "Pointer-following radial highlight on cards.", (x, y) => { doc.circle(x, y, 5).lineWidth(1.7).stroke(C.white); spark(x + 7, y - 7, 2.2, C.white); }],
+    ["Animated charts", "SVG gauge / area / bars that draw into view.", (x, y) => iconChart(x, y, 7, C.white)],
+    ["Command palette", "Command-K nav + theme switching (cmdk).", (x, y) => iconBook(x, y, 7, C.white)]
   ];
   let yy = ly;
   prims.forEach((p, i) => {
     rrect(lx, yy, lw, 64, 12, C.panel, C.line, 1);
     gradRect(lx + 14, yy + 16, 32, 32, 9, [GRAD[i % 3], hexA(GRAD[i % 3], 0.5)]);
-    iconBolt(lx + 30, yy + 32, 8, C.white);
-    set(F.bodySemi, 13, C.white).text(p[0], lx + 60, yy + 14, { lineBreak: false });
-    set(F.body, 10.5, C.mute).text(p[1], lx + 60, yy + 34, { width: lw - 74, lineBreak: false });
+    p[2](lx + 30, yy + 32);
+    set(F.bodySemi, 13, C.white).text(p[0], lx + 60, yy + 15, { lineBreak: false });
+    set(F.body, 10.5, C.mute).text(p[1], lx + 60, yy + 35, { width: lw - 74, lineBreak: false });
     yy += 72;
   });
 
