@@ -1,300 +1,255 @@
 "use client";
 
-import { Download, Info, Sparkles } from "lucide-react";
-
-import { FeatureTooltip } from "@/components/demo/feature-tooltip";
-import type { ReactNode } from "react";
 import { memo, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Download, Sparkles, Wand2 } from "lucide-react";
 
+import { AnimatedNumber } from "@/components/motion/animated-number";
+import { Reveal, Stagger, StaggerItem } from "@/components/motion/reveal";
+import { Tilt } from "@/components/motion/interactive";
+import { PageHeading } from "@/components/dashboard/page-heading";
+import { Meter } from "@/components/ui/charts";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CARD_INTERACTIVE, GRID_GAP, OVERLINE, PAGE_DESCRIPTION, PAGE_ENTER, PAGE_STACK, PAGE_TITLE } from "@/lib/ui";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { KeywordAnalysisSnapshot, KeywordSpectrumFilter } from "@/types/keywords";
 
-const StatCard = memo(function StatCard({
+function StatTile({
   label,
-  value,
-  hint,
-  hintClassName,
-  labelHint
+  children,
+  badge,
+  badgeTone = "soft"
 }: {
   label: string;
-  value: string;
-  hint: string;
-  hintClassName?: string;
-  labelHint?: ReactNode;
+  children: React.ReactNode;
+  badge?: string;
+  badgeTone?: "soft" | "success" | "warning";
 }) {
   return (
-    <Card className={cn("group", CARD_INTERACTIVE)}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <div className="flex min-w-0 items-center gap-1">
-          <p className={OVERLINE}>{label}</p>
-          {labelHint ? <FeatureTooltip label={label}>{labelHint}</FeatureTooltip> : null}
+    <Tilt className="h-full" max={7}>
+      <Card variant="glass" className="spotlight h-full p-6">
+        <div className="flex items-center justify-between">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            {label}
+          </p>
+          {badge ? <Badge variant={badgeTone}>{badge}</Badge> : null}
         </div>
-      </CardHeader>
-      <CardContent className="space-y-1 pb-6">
-        <p className="text-3xl font-semibold tabular-nums tracking-tight text-foreground transition-colors duration-300 motion-safe:group-hover:text-foreground/90">
-          {value}
-        </p>
-        <p className={cn("text-sm", hintClassName ?? "text-muted-foreground")}>{hint}</p>
-      </CardContent>
-    </Card>
+        <div className="mt-3">{children}</div>
+      </Card>
+    </Tilt>
   );
-});
-
-const SpectrumBar = memo(function SpectrumBar({
-  label,
-  sublabel,
-  percent,
-  hint
-}: {
-  label: string;
-  sublabel: string;
-  percent: number;
-  hint?: ReactNode;
-}) {
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between gap-2 text-sm">
-        <span className="flex items-center gap-1 text-muted-foreground">
-          {label}
-          {hint ? <FeatureTooltip label={label}>{hint}</FeatureTooltip> : null}
-        </span>
-        <span className="shrink-0 font-medium text-amber-200/90">{sublabel}</span>
-      </div>
-      <div className="h-2 overflow-hidden rounded-full bg-muted/50">
-        <div
-          className="h-full rounded-full bg-gradient-to-r from-amber-600 to-amber-400 shadow-[0_0_12px_-2px_rgba(251,191,36,0.35)] transition-[width,box-shadow] duration-700 ease-out"
-          style={{ width: `${percent}%` }}
-        />
-      </div>
-    </div>
-  );
-});
+}
 
 function KeywordAnalysisViewImpl({ data }: { data: KeywordAnalysisSnapshot }) {
   const [filter, setFilter] = useState<KeywordSpectrumFilter>("matched");
 
-  const filteredCategories = useMemo(() => {
-    return data.categories
-      .map((cat) => ({
-        ...cat,
-        chips: cat.chips.filter((c) => (filter === "matched" ? c.matched : !c.matched))
-      }))
-      .filter((cat) => cat.chips.length > 0);
-  }, [data.categories, filter]);
+  const filteredCategories = useMemo(
+    () =>
+      data.categories
+        .map((cat) => ({
+          ...cat,
+          chips: cat.chips.filter((c) => (filter === "matched" ? c.matched : !c.matched))
+        }))
+        .filter((cat) => cat.chips.length > 0),
+    [data.categories, filter]
+  );
 
   return (
-    <div className={cn(PAGE_STACK, PAGE_ENTER)}>
-      <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between md:gap-6">
-        <div className="min-w-0 space-y-3">
-          <h1 className={PAGE_TITLE}>{data.pageTitle}</h1>
-          <p className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            {data.targetRole}
-          </p>
-          <p className="max-w-2xl border-l-2 border-primary/35 bg-primary/[0.04] py-2 pl-4 text-sm leading-relaxed text-muted-foreground">
-            {data.insightLead}
-          </p>
-        </div>
-        <Badge variant="success" className="w-fit gap-2 px-3 py-1 text-xs">
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-          </span>
-          AI score: {data.aiScore}/100
-        </Badge>
-      </div>
+    <div className="space-y-8">
+      <PageHeading
+        eyebrow="Semantic analysis"
+        title={data.pageTitle}
+        description={data.insightLead}
+        action={
+          <Badge variant="success" className="gap-2 px-3 py-1.5">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+            </span>
+            AI score {data.aiScore}/100
+          </Badge>
+        }
+      />
 
-      <div className={cn("grid md:grid-cols-3", GRID_GAP)}>
-        <StatCard
-          label="Keywords matched"
-          value={String(data.matchedCount)}
-          hint={`${data.alignmentPercent}% alignment`}
-          hintClassName="text-primary/80"
-          labelHint={
-            <>
-              Count of JD terms detected on your resume. Alignment % weights must-have language more
-              heavily than optional phrasing.
-            </>
-          }
-        />
-        <StatCard
-          label="Missing critical"
-          value={String(data.missingCriticalCount)}
-          hint="Action required"
-          hintClassName="text-amber-400"
-          labelHint={
-            <>
-              High-signal phrases recruiters expect to see verbatim or as close paraphrases—fix
-              these before tuning secondary vocabulary.
-            </>
-          }
-        />
-        <StatCard
-          label="Impact potential"
-          value={`+${data.impactPotentialPercent}%`}
-          hint="Post integration"
-          labelHint={
-            <>
-              Modeled lift to your overall match if suggested integrations ship—use it to prioritize
-              rewrite vs. roadmap work.
-            </>
-          }
-        />
-      </div>
+      <Stagger className="grid gap-4 md:grid-cols-3" gap={0.1}>
+        <StaggerItem>
+          <StatTile label="Keywords matched" badge="74% aligned" badgeTone="success">
+            <span className="font-display text-4xl font-semibold tabular-nums text-foreground">
+              <AnimatedNumber value={data.matchedCount} />
+            </span>
+            <Meter className="mt-4" value={data.alignmentPercent} valueLabel={`${data.alignmentPercent}%`} label="Weighted alignment" />
+          </StatTile>
+        </StaggerItem>
+        <StaggerItem>
+          <StatTile label="Missing critical" badge="Action required" badgeTone="warning">
+            <span className="font-display text-4xl font-semibold tabular-nums text-foreground">
+              <AnimatedNumber value={data.missingCriticalCount} />
+            </span>
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+              High-signal phrases recruiters expect verbatim — fix these before secondary vocabulary.
+            </p>
+          </StatTile>
+        </StaggerItem>
+        <StaggerItem>
+          <StatTile label="Impact potential">
+            <span className="font-display text-4xl font-semibold tabular-nums text-foreground">
+              +<AnimatedNumber value={data.impactPotentialPercent} suffix="%" />
+            </span>
+            <Meter className="mt-4" value={data.impactPotentialPercent * 6} valueLabel="Post-integration" label="Modeled score lift" />
+          </StatTile>
+        </StaggerItem>
+      </Stagger>
 
-      <div className={cn("grid lg:grid-cols-[minmax(0,1fr)_minmax(0,20rem)]", "gap-6 md:gap-8")}>
-        <Card className={cn(CARD_INTERACTIVE, "min-w-0")}>
-          <CardHeader className="flex flex-col gap-4 border-b border-border/50 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0 space-y-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <CardTitle className="text-xl font-semibold tracking-tight">Target keyword spectrum</CardTitle>
-                <FeatureTooltip label="Target keyword spectrum">
-                  Each chip is a normalized JD concept. Matched chips already appear on your resume;
-                  missing chips are prioritized in rewrites and roadmap suggestions.
-                </FeatureTooltip>
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,21rem)]">
+        {/* Spectrum */}
+        <Reveal>
+          <Card className="min-w-0">
+            <CardHeader className="flex flex-col gap-4 border-b border-border/50 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0 space-y-1">
+                <h2 className="font-display text-lg font-semibold tracking-tight text-foreground">
+                  Target keyword spectrum
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Normalized JD concepts vs. your resume language.
+                </p>
               </div>
-              <CardDescription className={PAGE_DESCRIPTION}>
-                Categorized landscape based on job description vs. your resume.
-              </CardDescription>
-            </div>
-            <div className="flex shrink-0 rounded-xl border border-border/60 bg-muted/20 p-1">
-              <Button
-                type="button"
-                size="sm"
-                variant={filter === "matched" ? "default" : "ghost"}
-                className={cn("h-9 rounded-lg px-4", filter === "matched" && "shadow-sm")}
-                onClick={() => setFilter("matched")}
-              >
-                Matched
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant={filter === "missing" ? "default" : "ghost"}
-                className={cn("h-9 rounded-lg px-4", filter === "missing" && "shadow-sm")}
-                onClick={() => setFilter("missing")}
-              >
-                Missing
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="max-h-[min(420px,55vh)] space-y-8 overflow-y-auto overflow-x-hidden pt-6 scrollbar-thin">
-            {filteredCategories.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No keywords in this view.</p>
-            ) : (
-              filteredCategories.map((cat) => (
-                <div key={cat.id} className="space-y-3">
-                  <p className={OVERLINE}>{cat.title}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {cat.chips.map((chip) => (
-                      <span
-                        key={chip.id}
-                        className={cn(
-                          "rounded-full border px-3 py-1 text-xs font-medium transition-colors duration-200",
-                          chip.matched
-                            ? "border-border/60 bg-muted/25 text-foreground motion-safe:hover:border-primary/20 motion-safe:hover:bg-muted/40"
-                            : "border-amber-500/25 bg-amber-500/10 text-amber-50 motion-safe:hover:border-amber-400/40 motion-safe:hover:bg-amber-500/15"
-                        )}
-                      >
-                        {chip.label}
-                      </span>
-                    ))}
-                  </div>
+              <div className="inline-flex shrink-0 rounded-full border border-border/60 bg-muted/30 p-1">
+                {(["matched", "missing"] as KeywordSpectrumFilter[]).map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => setFilter(f)}
+                    className={cn(
+                      "relative rounded-full px-4 py-1.5 text-sm font-medium capitalize transition-colors",
+                      filter === f ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {filter === f ? (
+                      <motion.span
+                        layoutId="kw-filter"
+                        transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                        className="absolute inset-0 rounded-full bg-primary/15 ring-1 ring-primary/30"
+                      />
+                    ) : null}
+                    <span className="relative z-10">{f}</span>
+                  </button>
+                ))}
+              </div>
+            </CardHeader>
+            <CardContent className="max-h-[min(440px,58vh)] space-y-7 overflow-y-auto pt-6 scrollbar-thin">
+              <AnimatePresence mode="popLayout">
+                {filteredCategories.map((cat) => (
+                  <motion.div
+                    key={cat.id}
+                    layout
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="space-y-3"
+                  >
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      {cat.title}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <AnimatePresence mode="popLayout">
+                        {cat.chips.map((chip) => (
+                          <motion.span
+                            key={chip.id}
+                            layout
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.8 }}
+                            transition={{ type: "spring", stiffness: 400, damping: 28 }}
+                            whileHover={{ y: -2 }}
+                            className={cn(
+                              "cursor-default rounded-full border px-3.5 py-1.5 text-xs font-medium",
+                              chip.matched
+                                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-500"
+                                : "border-amber-500/30 bg-amber-500/10 text-amber-500"
+                            )}
+                          >
+                            {chip.label}
+                          </motion.span>
+                        ))}
+                      </AnimatePresence>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </CardContent>
+          </Card>
+        </Reveal>
+
+        {/* Side column */}
+        <div className="flex min-w-0 flex-col gap-4">
+          <Reveal delay={0.06}>
+            <Card variant="gradient" className="min-w-0">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  AI optimization
                 </div>
-              ))
-            )}
+              </CardHeader>
+              <CardContent className="space-y-2.5">
+                <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+                  {data.optimization.title}
+                </p>
+                <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
+                  {data.optimization.body}
+                </p>
+              </CardContent>
+            </Card>
+          </Reveal>
+
+          <Reveal delay={0.12}>
+            <Card className="min-w-0">
+              <CardHeader className="pb-3">
+                <h3 className="font-display text-base font-semibold text-foreground">
+                  Semantic context
+                </h3>
+                <p className="text-sm text-muted-foreground">How your resume reads vs. this JD.</p>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                <Meter
+                  value={data.semanticContext.industryRelevancy.percent}
+                  label="Industry relevancy"
+                  valueLabel={data.semanticContext.industryRelevancy.label}
+                  tone="brand"
+                />
+                <Meter
+                  value={data.semanticContext.jdDifficulty.percent}
+                  label="JD difficulty"
+                  valueLabel={data.semanticContext.jdDifficulty.label}
+                  tone="amber"
+                />
+              </CardContent>
+            </Card>
+          </Reveal>
+        </div>
+      </div>
+
+      <Reveal>
+        <Card variant="gradient">
+          <CardContent className="flex flex-col gap-5 p-6 md:flex-row md:items-center md:justify-between md:p-7">
+            <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+              Ready to update your resume? Export the optimized keyword list, then apply AI rewrites in
+              one click.
+            </p>
+            <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+              <Button variant="outline">
+                <Download className="h-4 w-4" />
+                Export analysis
+              </Button>
+              <Button variant="gradient" className="shine" asChild>
+                <a href="/app/rewrites">
+                  <Wand2 className="h-4 w-4" />
+                  Apply rewrites
+                </a>
+              </Button>
+            </div>
           </CardContent>
         </Card>
-
-        <div className="flex min-w-0 flex-col gap-4">
-          <Card className={cn(CARD_INTERACTIVE, "min-w-0")}>
-            <CardHeader className="space-y-2 border-b border-border/50 pb-4">
-              <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                <Sparkles className="h-4 w-4 shrink-0 text-primary" />
-                AI optimization
-                <FeatureTooltip label="AI optimization">
-                  Concrete before/after language you can paste into your resume—grounded in the gaps
-                  surfaced in this analysis.
-                </FeatureTooltip>
-              </div>
-            </CardHeader>
-            <CardContent className="max-h-[min(220px,40vh)] space-y-3 overflow-y-auto overflow-x-hidden pt-4 scrollbar-thin">
-              <p className="text-xs font-semibold uppercase tracking-wide text-amber-400">
-                {data.optimization.title}
-              </p>
-              <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
-                {data.optimization.body}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className={cn(CARD_INTERACTIVE, "min-w-0")}>
-            <CardHeader className="border-b border-border/50 pb-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <CardTitle className="text-base font-semibold">Semantic context</CardTitle>
-                <FeatureTooltip label="Semantic context">
-                  Higher-level fit signals beyond literal keyword matches—use them to tune stories in
-                  interviews, not just bullet wording.
-                </FeatureTooltip>
-              </div>
-              <CardDescription className={PAGE_DESCRIPTION}>
-                How your resume reads against this JD.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6 pt-4">
-              <SpectrumBar
-                label="Industry relevancy"
-                sublabel={data.semanticContext.industryRelevancy.label}
-                percent={data.semanticContext.industryRelevancy.percent}
-                hint={
-                  <>
-                    How closely your experience narrative matches fintech / platform hiring signals in
-                    this corpus—not a score on you personally, but fit to this JD family.
-                  </>
-                }
-              />
-              <SpectrumBar
-                label="JD difficulty"
-                sublabel={data.semanticContext.jdDifficulty.label}
-                percent={data.semanticContext.jdDifficulty.percent}
-                hint={
-                  <>
-                    Heuristic for how selective this posting is (bar for proof, seniority, and scope).
-                    Higher difficulty means reviewers expect more concrete ownership stories.
-                  </>
-                }
-              />
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      <Card className="border-border/40 bg-gradient-to-r from-card/95 via-primary/[0.04] to-muted/20 shadow-depth transition-[box-shadow,transform] duration-500 ease-out motion-safe:hover:shadow-glow">
-        <CardContent className="flex flex-col gap-5 p-5 md:flex-row md:items-center md:justify-between md:p-7">
-          <div className="flex min-w-0 gap-3 text-sm text-muted-foreground">
-            <div className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-border/60 bg-background/50">
-              <Info className="h-4 w-4 text-primary" />
-            </div>
-            <p className="min-w-0 max-w-2xl leading-relaxed">
-              Ready to update your resume? Download the optimized keyword list as a guide, then apply
-              AI rewrites in one click.
-            </p>
-          </div>
-          <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
-            <Button variant="outline" className="gap-2">
-              <Download className="h-4 w-4" />
-              Export analysis
-            </Button>
-            <Button className="gap-2 shadow-sm">
-              Apply rewrites
-              <span aria-hidden>›</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      </Reveal>
     </div>
   );
 }

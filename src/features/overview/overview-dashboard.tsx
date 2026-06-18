@@ -1,316 +1,308 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, BarChart2, Check, FileText, Users } from "lucide-react";
-import type { ReactNode } from "react";
 import { memo } from "react";
+import { ArrowRight, ArrowUpRight, BarChart2, Check, FileText, Sparkles, Users } from "lucide-react";
 
-import { FeatureTooltip } from "@/components/demo/feature-tooltip";
+import { AnimatedNumber } from "@/components/motion/animated-number";
+import { Reveal, Stagger, StaggerItem } from "@/components/motion/reveal";
+import { Tilt, Spotlight } from "@/components/motion/interactive";
+import { PageHeading } from "@/components/dashboard/page-heading";
+import { AreaSpark, BarsMini, Meter, RadialGauge } from "@/components/ui/charts";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import {
-  CARD_INTERACTIVE,
-  GRID_GAP,
-  OVERLINE,
-  OVERLINE_ACCENT,
-  PAGE_DESCRIPTION,
-  PAGE_ENTER,
-  PAGE_STACK,
-  PAGE_TITLE
-} from "@/lib/ui";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { appNav } from "@/data/nav";
 import { cn } from "@/lib/utils";
 import type { OverviewDashboardSnapshot, OverviewSkillGap } from "@/types/overview";
 
-const ScoreRing = memo(function ScoreRing({ value }: { value: number }) {
-  const size = 168;
-  const stroke = 12;
-  const r = (size - stroke) / 2;
-  const c = 2 * Math.PI * r;
-  const offset = c * (1 - value / 100);
+const SCORE_HISTORY = [74, 78, 76, 81, 83, 86, 88];
+const ATS_BARS = [62, 70, 66, 78, 84, 88, 91];
 
-  return (
-    <div
-      className={cn(
-        "relative mx-auto inline-flex rounded-full p-2",
-        "ring-2 ring-primary/25 ring-offset-2 ring-offset-background",
-        "motion-safe:shadow-[0_0_40px_-12px_hsl(var(--primary)/0.45)]"
-      )}
-    >
-      <div className="relative mx-auto" style={{ width: size, height: size }}>
-        <svg width={size} height={size} className="-rotate-90 text-muted-foreground/15" aria-hidden>
-          <circle
-            stroke="currentColor"
-            strokeWidth={stroke}
-            fill="none"
-            r={r}
-            cx={size / 2}
-            cy={size / 2}
-          />
-          <circle
-            className="text-emerald-400 transition-[stroke-dashoffset] duration-700 ease-out motion-safe:drop-shadow-[0_0_12px_rgba(52,211,153,0.35)]"
-            stroke="currentColor"
-            strokeWidth={stroke}
-            fill="none"
-            r={r}
-            cx={size / 2}
-            cy={size / 2}
-            strokeDasharray={c}
-            strokeDashoffset={offset}
-            strokeLinecap="round"
-          />
-        </svg>
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-          <span className="text-4xl font-semibold tabular-nums tracking-tight text-foreground transition-colors duration-300">
-            {value}
-          </span>
-          <span className={cn(OVERLINE, "tracking-[0.2em]")}>Percent</span>
-        </div>
-      </div>
-    </div>
-  );
-});
-
-const GapIcon = memo(function GapIcon({ kind }: { kind: OverviewSkillGap["icon"] }) {
+function GapIcon({ kind }: { kind: OverviewSkillGap["icon"] }) {
   const Icon = kind === "document" ? FileText : kind === "chart" ? BarChart2 : Users;
   return (
-    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-border/60 bg-background/50 transition-colors duration-200 motion-safe:group-hover:border-primary/25 motion-safe:group-hover:bg-primary/5">
-      <Icon className="h-4 w-4 text-muted-foreground transition-colors duration-200 motion-safe:group-hover:text-primary" />
+    <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-border/60 bg-background/40 transition-colors duration-200 group-hover:border-primary/30 group-hover:bg-primary/10">
+      <Icon className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-primary" />
     </div>
-  );
-});
-
-function MetricHeader({
-  label,
-  tooltip,
-  badge
-}: {
-  label: string;
-  tooltip: ReactNode;
-  badge?: string;
-}) {
-  return (
-    <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0 pb-2">
-      <div className="flex min-w-0 items-center gap-1.5">
-        <p className={OVERLINE}>{label}</p>
-        <FeatureTooltip label={label}>{tooltip}</FeatureTooltip>
-      </div>
-      {badge ? (
-        <Badge
-          variant="outline"
-          className="shrink-0 border-primary/25 bg-primary/10 text-[10px] font-semibold uppercase tracking-wide text-primary"
-        >
-          {badge}
-        </Badge>
-      ) : null}
-    </CardHeader>
   );
 }
 
 function OverviewDashboardImpl({ data }: { data: OverviewDashboardSnapshot }) {
+  const shortcuts = appNav.filter((i) => i.href !== "/app/overview").slice(0, 6);
+
   return (
-    <div className={cn(PAGE_STACK, PAGE_ENTER)}>
-      <Card
-        className={cn(
-          "overflow-hidden border-border/40 bg-gradient-to-br from-card via-card to-primary/[0.06] shadow-depth-lg ring-1 ring-white/[0.04] transition-[box-shadow,transform] duration-500 ease-out motion-safe:hover:shadow-glow"
-        )}
-      >
-        <CardHeader className="space-y-5 pb-4 pt-9">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="secondary" className="border-border/60 text-[10px] font-semibold uppercase tracking-wide">
-              Live demo workspace
-            </Badge>
-            <Badge variant="outline" className="text-[10px] font-medium text-muted-foreground">
-              Meridian Payments · REQ-4481
+    <div className="space-y-8">
+      <PageHeading
+        eyebrow="Live demo workspace"
+        title={data.headline}
+        description={data.subline}
+        action={
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="soft">{data.analysisMeta.postingRef}</Badge>
+            <Badge variant="outline" className="text-muted-foreground">
+              Top 12%
             </Badge>
           </div>
-          <div className="space-y-2">
-            <p className={OVERLINE_ACCENT}>What HiredLens is</p>
-            <p className="max-w-3xl text-[15px] leading-7 text-muted-foreground md:text-base md:leading-8">
-              {data.productPitch}
-            </p>
-          </div>
-          <h1 className={cn(PAGE_TITLE, "max-w-3xl")}>{data.headline}</h1>
-          <p className={cn(PAGE_DESCRIPTION, "max-w-3xl")}>{data.subline}</p>
-        </CardHeader>
-        <CardContent className="space-y-6 border-t border-border/40 pb-8 pt-2">
-          <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground">
-            <span>{data.analysisMeta.lastSynced}</span>
-            <span className="hidden text-border/80 sm:inline" aria-hidden>
-              ·
-            </span>
-            <span>{data.analysisMeta.postingRef}</span>
-            <span className="hidden text-border/80 sm:inline" aria-hidden>
-              ·
-            </span>
-            <span>{data.analysisMeta.applicantPool}</span>
-          </div>
-          <div className="grid gap-3 md:grid-cols-3">
-            {data.valueProps.map((line, i) => (
-              <div
-                key={i}
-                className="flex gap-3 rounded-lg border border-border/50 bg-muted/15 px-3 py-3 text-sm leading-snug text-foreground/95"
-              >
-                <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={2.5} aria-hidden />
-                <span>{line}</span>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+        }
+      />
 
-      <Card className="border-primary/20 bg-gradient-to-r from-primary/[0.08] via-card to-muted/20 shadow-depth">
-        <CardHeader className="space-y-2 pb-2 pt-6 md:flex-row md:items-center md:justify-between md:space-y-0">
-          <div className="min-w-0 space-y-1">
-            <p className={OVERLINE_ACCENT}>{data.nextBestAction.title}</p>
-            <p className="text-base font-semibold tracking-tight text-foreground">Move the needle today</p>
-            <p className={cn(PAGE_DESCRIPTION, "max-w-2xl pt-1")}>{data.nextBestAction.description}</p>
-          </div>
-          <Button asChild className="mt-2 shrink-0 gap-2 md:mt-0">
-            <Link href={data.nextBestAction.href}>
-              Open keyword analysis
-              <ArrowRight className="h-4 w-4" aria-hidden />
-            </Link>
-          </Button>
-        </CardHeader>
-      </Card>
-
-      <div className={cn("grid lg:grid-cols-3", GRID_GAP)}>
-        <Card
-          className={cn(
-            CARD_INTERACTIVE,
-            "ring-2 ring-primary/20 shadow-depth-lg motion-safe:transition-[box-shadow,transform] motion-safe:duration-300"
-          )}
-        >
-          <MetricHeader
-            label="Overall score"
-            badge="Primary"
-            tooltip={
-              <>
-                Composite of keyword coverage, ATS parsing safety, and semantic fit vs. this posting.
-                Use it as your headline KPI when iterating your resume.
-              </>
-            }
-          />
-          <CardContent className="flex flex-col items-center gap-7 pb-8 pt-2">
-            <ScoreRing value={data.overallScorePercent} />
-            <div className="max-w-xs space-y-2 text-center">
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                <span className="font-medium text-foreground">{data.percentileLabel}</span>
-                <br />
-                <span className="text-xs text-muted-foreground/90">{data.targetRole}</span>
+      {/* HERO — copy + 3D score showcase */}
+      <Reveal>
+        <Card variant="glass" className="overflow-hidden">
+          <div className="grid gap-0 lg:grid-cols-[1.25fr_1fr]">
+            <div className="space-y-6 p-7 md:p-9">
+              <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
+                <Sparkles className="h-3.5 w-3.5" />
+                What HiredLens is
               </p>
-              <p className="text-xs leading-relaxed text-primary/90">{data.scoreCallout}</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card
-          className={cn(
-            CARD_INTERACTIVE,
-            "ring-1 ring-emerald-500/20 shadow-depth motion-safe:transition-[box-shadow,transform] motion-safe:duration-300"
-          )}
-        >
-          <MetricHeader
-            label="Keyword match %"
-            badge="Coverage"
-            tooltip={
-              <>
-                Matched count is how many JD phrases appear on your resume. Alignment % weights
-                critical vs. nice-to-have terms so you know where density still lags.
-              </>
-            }
-          />
-          <CardContent className="space-y-7 pb-8">
-            <div className="flex items-end justify-between gap-4">
-              <div>
-                <p className="text-4xl font-semibold tabular-nums tracking-tight text-foreground">
-                  {data.matchedKeywordCount}
-                </p>
-                <p className="text-sm text-primary/85">{data.keywordAlignmentPercent}% alignment</p>
+              <p className="max-w-xl text-[15px] leading-7 text-muted-foreground md:text-base">
+                {data.productPitch}
+              </p>
+              <Stagger className="grid gap-3 sm:grid-cols-1" gap={0.1}>
+                {data.valueProps.map((line, i) => (
+                  <StaggerItem key={i}>
+                    <div className="flex gap-3 rounded-[calc(var(--radius)-4px)] border border-border/50 bg-background/30 px-3.5 py-3 text-sm leading-snug text-foreground/95">
+                      <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary/15 text-primary">
+                        <Check className="h-3 w-3" strokeWidth={3} />
+                      </span>
+                      <span>{line}</span>
+                    </div>
+                  </StaggerItem>
+                ))}
+              </Stagger>
+              <div className="flex flex-wrap gap-3 pt-1">
+                <Button asChild variant="gradient" className="shine">
+                  <Link href="/app/keywords">
+                    Open keyword analysis
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button asChild variant="outline">
+                  <Link href="/app/rewrites">Run an AI rewrite</Link>
+                </Button>
               </div>
             </div>
 
-            <div className="space-y-2.5">
-              <div className="flex items-center justify-between gap-2 text-sm">
-                <span className="flex items-center gap-1 text-muted-foreground">
-                  ATS compatibility
-                  <FeatureTooltip label="ATS compatibility">
-                    How confidently parsers will map your headings, dates, and skills blocks—high
-                    scores reduce formatting risk before a human reads you.
-                  </FeatureTooltip>
-                </span>
-                <span className="font-medium tabular-nums text-foreground">
-                  {data.atsCompatibilityPercent}%
-                </span>
-              </div>
-              <Progress
-                value={data.atsCompatibilityPercent}
-                className="h-2.5 bg-muted/50 [&_[data-slot=progress-indicator]]:bg-primary"
+            <div className="relative border-t border-border/50 bg-[hsl(var(--surface)/0.4)] p-7 md:p-9 lg:border-l lg:border-t-0">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,hsl(var(--primary)/0.14),transparent_60%)]"
               />
+              <Tilt className="relative" max={8}>
+                <Spotlight className="flex flex-col items-center gap-5 rounded-[var(--radius)] p-2 text-center">
+                  <RadialGauge value={data.overallScorePercent} label="Overall match" />
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-foreground">{data.percentileLabel}</p>
+                    <p className="text-xs leading-relaxed text-primary/90">{data.scoreCallout}</p>
+                  </div>
+                  <div className="w-full">
+                    <AreaSpark data={SCORE_HISTORY} />
+                    <p className="mt-1 text-[11px] uppercase tracking-wider text-muted-foreground">
+                      Score trend · last 7 runs
+                    </p>
+                  </div>
+                </Spotlight>
+              </Tilt>
             </div>
+          </div>
+        </Card>
+      </Reveal>
 
-            <div className="space-y-3">
-              <div className="flex items-center gap-1.5">
-                <p className={OVERLINE}>Top missing keywords</p>
-                <FeatureTooltip label="Top missing keywords">
-                  Highest-impact phrases from the JD that are absent or weak on your resume—address
-                  these before polishing lower-priority vocabulary.
-                </FeatureTooltip>
+      {/* METRIC TILES */}
+      <Stagger className="grid gap-4 md:grid-cols-3" gap={0.1}>
+        <StaggerItem>
+          <Tilt className="h-full" max={7}>
+            <Card variant="glass" className="spotlight h-full p-6">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Keyword match
+              </p>
+              <div className="mt-2 flex items-end justify-between gap-3">
+                <span className="font-display text-4xl font-semibold tabular-nums text-foreground">
+                  <AnimatedNumber value={data.matchedKeywordCount} />
+                </span>
+                <Badge variant="success">+6 this week</Badge>
               </div>
-              <ul className="space-y-2">
+              <Meter
+                className="mt-5"
+                value={data.keywordAlignmentPercent}
+                label="Weighted alignment"
+              />
+            </Card>
+          </Tilt>
+        </StaggerItem>
+
+        <StaggerItem>
+          <Tilt className="h-full" max={7}>
+            <Card variant="glass" className="spotlight h-full p-6">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                ATS compatibility
+              </p>
+              <div className="mt-2 flex items-end justify-between gap-3">
+                <span className="font-display text-4xl font-semibold tabular-nums text-foreground">
+                  <AnimatedNumber value={data.atsCompatibilityPercent} suffix="%" />
+                </span>
+                <Badge variant="soft">Parser-safe</Badge>
+              </div>
+              <BarsMini className="mt-5" data={ATS_BARS} />
+            </Card>
+          </Tilt>
+        </StaggerItem>
+
+        <StaggerItem>
+          <Tilt className="h-full" max={7}>
+            <Card variant="glass" className="spotlight h-full p-6">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Skill gaps
+              </p>
+              <div className="mt-2 flex items-end justify-between gap-3">
+                <span className="font-display text-4xl font-semibold tabular-nums text-foreground">
+                  <AnimatedNumber value={data.skillGaps.length} />
+                </span>
+                <Badge variant="warning">Action queue</Badge>
+              </div>
+              <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
+                Themes recruiters flag when bullets don&apos;t yet prove depth — each links to the
+                roadmap.
+              </p>
+            </Card>
+          </Tilt>
+        </StaggerItem>
+      </Stagger>
+
+      {/* MISSING KEYWORDS + SKILL GAPS */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Reveal>
+          <Card className="h-full">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Top missing keywords
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">Highest-impact phrases to add next</p>
+              </div>
+              <Link
+                href="/app/keywords"
+                className="group inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+              >
+                View all
+                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </Link>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2.5">
                 {data.missingKeywords.map((kw) => (
-                  <li key={kw.id}>
+                  <li
+                    key={kw.id}
+                    className={cn(
+                      "flex items-start gap-3 rounded-[calc(var(--radius)-4px)] border px-3.5 py-3 text-sm leading-snug transition-colors duration-200",
+                      kw.emphasis
+                        ? "border-primary/30 bg-primary/[0.08] text-foreground hover:border-primary/50"
+                        : "border-border/60 bg-muted/20 text-muted-foreground hover:border-border"
+                    )}
+                  >
                     <span
                       className={cn(
-                        "inline-flex w-full rounded-lg border px-3 py-2 text-left text-xs leading-snug transition-colors duration-200 md:text-sm",
-                        kw.emphasis
-                          ? "border-primary/35 bg-primary/10 text-foreground motion-safe:hover:border-primary/50 motion-safe:hover:bg-primary/[0.14]"
-                          : "border-border/60 bg-muted/25 text-muted-foreground motion-safe:hover:border-border motion-safe:hover:bg-muted/40"
+                        "mt-1 h-1.5 w-1.5 shrink-0 rounded-full",
+                        kw.emphasis ? "bg-primary" : "bg-muted-foreground/50"
                       )}
-                    >
-                      {kw.label}
-                    </span>
+                    />
+                    {kw.label}
                   </li>
                 ))}
               </ul>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </Reveal>
 
-        <Card className={cn(CARD_INTERACTIVE)}>
-          <MetricHeader
-            label="Skill gaps"
-            badge="Queue"
-            tooltip={
-              <>
-                Themes recruiters flag when your bullets don&apos;t yet prove depth. Each links
-                forward to roadmap tasks and mock-interview prompts.
-              </>
-            }
-          />
-          <CardContent className="space-y-5 pb-8">
-            <ul className="space-y-4">
+        <Reveal delay={0.08}>
+          <Card className="h-full">
+            <CardHeader>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Skill gaps to close
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">Sequenced against the panel rubric</p>
+            </CardHeader>
+            <CardContent className="space-y-4">
               {data.skillGaps.map((gap) => (
-                <li key={gap.id} className="group flex gap-3">
+                <div key={gap.id} className="group flex gap-3">
                   <GapIcon kind={gap.icon} />
                   <div className="min-w-0 flex-1 space-y-0.5">
                     <p className="text-sm font-medium leading-snug text-foreground">{gap.title}</p>
                     <p className="text-xs text-muted-foreground">{gap.subtitle}</p>
                   </div>
-                </li>
+                </div>
               ))}
-            </ul>
-            <Link
-              href="/app/skill-roadmap"
-              className="group inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-colors duration-200 hover:text-primary/90 hover:underline"
-            >
-              View full roadmap
-              <ArrowRight className="h-4 w-4 shrink-0 transition-transform duration-200 motion-safe:group-hover:translate-x-0.5" />
-            </Link>
-          </CardContent>
+              <Button asChild variant="ghost" className="w-full justify-between">
+                <Link href="/app/skill-roadmap">
+                  View full roadmap
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </Reveal>
+      </div>
+
+      {/* NEXT BEST ACTION */}
+      <Reveal>
+        <Card variant="gradient" className="overflow-hidden">
+          <div className="relative flex flex-col gap-5 p-7 md:flex-row md:items-center md:justify-between md:p-8">
+            <div className="min-w-0 space-y-1.5">
+              <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
+                <Sparkles className="h-3.5 w-3.5" />
+                {data.nextBestAction.title}
+              </p>
+              <h3 className="font-display text-xl font-semibold tracking-tight text-foreground">
+                Move the needle today
+              </h3>
+              <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                {data.nextBestAction.description}
+              </p>
+            </div>
+            <Button asChild variant="gradient" size="lg" className="shrink-0 shine">
+              <Link href={data.nextBestAction.href}>
+                Open keyword analysis
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
         </Card>
+      </Reveal>
+
+      {/* WORKFLOW SHORTCUTS */}
+      <div className="space-y-4">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Continue your workflow
+        </p>
+        <Stagger className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" gap={0.06}>
+          {shortcuts.map((item) => {
+            const Icon = item.icon;
+            return (
+              <StaggerItem key={item.href}>
+                <Tilt max={6}>
+                  <Link
+                    href={item.href}
+                    className="group flex h-full items-start gap-3 rounded-[var(--radius)] border border-border/60 bg-card/60 p-4 transition-colors duration-200 hover:border-primary/30 hover:bg-card"
+                  >
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-border/50 bg-background/50 text-muted-foreground transition-colors group-hover:border-primary/30 group-hover:text-primary">
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="flex items-center gap-1 text-sm font-semibold text-foreground">
+                        {item.title}
+                        <ArrowUpRight className="h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-100" />
+                      </span>
+                      <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground">
+                        {item.description}
+                      </span>
+                    </span>
+                  </Link>
+                </Tilt>
+              </StaggerItem>
+            );
+          })}
+        </Stagger>
       </div>
     </div>
   );
